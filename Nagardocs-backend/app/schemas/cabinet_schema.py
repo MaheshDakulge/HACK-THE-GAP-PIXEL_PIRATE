@@ -23,6 +23,8 @@ class FolderResponse(BaseModel):
     is_system: bool = False
     is_default_review: bool = False
     created_at: Optional[str] = None
+    document_count: Optional[int] = None
+    documents: Optional[List[Any]] = None
 
 class DocumentFieldResponse(BaseModel):
     id: Optional[str] = None

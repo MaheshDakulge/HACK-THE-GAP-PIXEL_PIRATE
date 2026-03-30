@@ -68,6 +68,8 @@ class AnalyticsService:
     # =========================================================
     def compute_department(self, documents: list, jobs: list, active_users: list) -> dict:
 
+        from app.services.autosort_service import DOC_TYPE_TO_FOLDER
+
         total = len(documents)
 
         type_counts = {}
@@ -81,8 +83,11 @@ class AnalyticsService:
         uploaded_today = 0
 
         for doc in documents:
-            dtype = doc.get("doc_type") or "Unknown"
-            type_counts[dtype] = type_counts.get(dtype, 0) + 1
+            raw_dtype = doc.get("doc_type") or "Unknown"
+            
+            # Map raw doc type to polished folder category
+            polished_category = DOC_TYPE_TO_FOLDER.get(raw_dtype, "Other")
+            type_counts[polished_category] = type_counts.get(polished_category, 0) + 1
 
             if doc.get("is_tampered"):
                 tamper_count += 1

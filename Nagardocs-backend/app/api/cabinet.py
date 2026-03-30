@@ -23,25 +23,56 @@ async def list_folders(
     user: dict = Depends(get_current_user),
 ):
     if not user.get("department_id"):
-        # Return a synthetic folder for their personal unassigned documents
+        # Return categorized synthetic folders for personal documents
         try:
-            doc_res = supabase.table("documents").select("id").eq("user_id", user["id"]).execute()
-            count = len(doc_res.data) if doc_res.data else 0
+            doc_res = supabase.table("documents").select("id, doc_type").eq("user_id", user["id"]).execute()
+            docs = doc_res.data or []
         except Exception:
-            count = 0
+            docs = []
+
+        from app.services.autosort_service import DOC_TYPE_TO_FOLDER
+        
+        category_counts = {}
+        for doc in docs:
+            dt = (doc.get("doc_type") or "").lower().strip()
+            folder_name = "Other"
+            for k, f_name in DOC_TYPE_TO_FOLDER.items():
+                if k in dt:
+                    folder_name = f_name
+                    break
+            category_counts[folder_name] = category_counts.get(folder_name, 0) + 1
+
+        folders = []
+        for cat, count in category_counts.items():
+            folders.append({
+                "id": f"personal_{cat}",
+                "department_id": "",
+                "created_at": "2024-01-01T00:00:00Z",
+                "name": cat,
+                "doc_type_affinity": "all",
+                "color": "#1a73e8" if cat != "Other" else "#9e9e9e",
+                "icon": "folder" if cat != "Other" else "folder_open",
+                "is_system": True,
+                "is_default_review": False,
+                "document_count": count
+            })
             
-        return [{
-            "id": "unassigned",
-            "department_id": "",
-            "created_at": "2024-01-01T00:00:00Z",
-            "name": "My Uploads",
-            "doc_type_affinity": "all",
-            "color": "#1a73e8",
-            "icon": "folder_shared",
-            "is_system": True,
-            "is_default_review": False,
-            "document_count": count
-        }]
+        if not folders:
+            # Fallback for entirely new users so their screen isn't completely empty
+            folders.append({
+                "id": "unassigned",
+                "department_id": "",
+                "created_at": "2024-01-01T00:00:00Z",
+                "name": "My Uploads",
+                "doc_type_affinity": "all",
+                "color": "#1a73e8",
+                "icon": "folder_shared",
+                "is_system": True,
+                "is_default_review": False,
+                "document_count": 0
+            })
+            
+        return folders
     result = (
         supabase.table("folders")
         .select("*, documents(count)")
@@ -170,8 +201,8 @@ async def list_folder_documents(
     supabase: SupabaseClient = Depends(get_supabase),
     user: dict = Depends(get_current_user),
 ):
-    if folder_id == "unassigned":
-        # Handle the synthetic folder for legacy/unassigned users
+    if folder_id == "unassigned" or folder_id.startswith("personal_"):
+        # Handle the synthetic folders for legacy/unassigned users
         query = (
             supabase.table("documents")
             .select("*, document_fields(*), users(name, designation)")
@@ -179,6 +210,22 @@ async def list_folder_documents(
         )
         result = query.order("created_at", desc=True).execute()
         docs = result.data or []
+        
+        if folder_id.startswith("personal_"):
+            cat_name = folder_id.split("personal_", 1)[1]
+            from app.services.autosort_service import DOC_TYPE_TO_FOLDER
+            filtered_docs = []
+            for doc in docs:
+                dt = (doc.get("doc_type") or "").lower().strip()
+                match = "Other"
+                for k, f_name in DOC_TYPE_TO_FOLDER.items():
+                    if k in dt:
+                        match = f_name
+                        break
+                if match == cat_name:
+                    filtered_docs.append(doc)
+            docs = filtered_docs
+
         for doc in docs:
             if not doc.get("users"):
                 doc["users"] = {"name": user["name"], "designation": ""}

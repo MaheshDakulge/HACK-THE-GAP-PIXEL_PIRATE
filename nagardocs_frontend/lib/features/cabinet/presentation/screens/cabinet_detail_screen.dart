@@ -21,11 +21,17 @@ class CabinetDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final docsAsync = ref.watch(folderDocumentsProvider(folderId));
+    String title = 'Documents';
+    if (folderId.startsWith('personal_')) {
+      title = folderId.substring(9);
+    } else if (folderId == 'unassigned') {
+      title = 'My Uploads';
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Documents', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(

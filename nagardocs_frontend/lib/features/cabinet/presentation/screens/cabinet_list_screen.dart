@@ -113,8 +113,8 @@ class _CabinetFolderItem extends StatelessWidget {
           color: Colors.transparent,
           child: Container(
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.tertiary, AppColors.secondary],
+              gradient: LinearGradient(
+                colors: folder.gradientColors,
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -125,7 +125,7 @@ class _CabinetFolderItem extends StatelessWidget {
                 bottomRight: Radius.circular(16),
               ),
               boxShadow: [
-                BoxShadow(color: AppColors.tertiary.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8)),
+                BoxShadow(color: folder.gradientColors[0].withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8)),
               ],
             ),
             child: Stack(
@@ -140,14 +140,13 @@ class _CabinetFolderItem extends StatelessWidget {
                     decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.8), borderRadius: BorderRadius.circular(4)),
                   ),
                 ),
-                // Front flap
                 Positioned.fill(
                   top: 20,
                   child: Container(
                     padding: const EdgeInsets.all(16),
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryContainer,
-                      borderRadius: BorderRadius.only(
+                    decoration: BoxDecoration(
+                      color: folder.gradientColors[0].withValues(alpha: 0.9),
+                      borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(16),
                         topRight: Radius.circular(16),
                         bottomLeft: Radius.circular(16),
@@ -158,7 +157,7 @@ class _CabinetFolderItem extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        const Icon(Icons.folder_open_rounded, color: Colors.white70, size: 32),
+                        Icon(folder.icon, color: Colors.white.withValues(alpha: 0.9), size: 32),
                         const SizedBox(height: 12),
                         Text(folder.name, style: AppTextStyles.bodyLg.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),

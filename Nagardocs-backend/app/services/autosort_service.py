@@ -3,21 +3,62 @@ from app.core.database import get_supabase_sync
 from app.core.config import settings
 from app.utils.logger import logger
 
-# Keywords that map document types to folder names
+# Keywords that map document types to folder names (order matters: more specific first)
 DOC_TYPE_TO_FOLDER = {
-    "aadhaar card":          "Identity Documents",
-    "ration card":           "Ration Cards",
+    # Identity Documents
+    "aadhaar":               "Identity Documents",
+    "pan card":              "Identity Documents",
+    "voter id":              "Identity Documents",
+    "voter card":            "Identity Documents",
+    "passport":              "Identity Documents",
+    "driving licence":       "Identity Documents",
+    "driving license":       "Identity Documents",
+    "ration card":           "Identity Documents",
+
+    # Property Tax
+    "property tax":          "Property Tax",
+    "property card":         "Property Tax",
+
+    # Water Bills
+    "water bill":            "Water Bills",
+    "water tax":             "Water Bills",
+    "water invoice":         "Water Bills",
+
+    # Land Records
     "land record":           "Land Records",
-    "birth certificate":     "Birth Certificates",
-    "death certificate":     "Death Certificates",
-    "caste certificate":     "Caste Certificates",
-    "income certificate":    "Income Certificates",
-    "domicile certificate":  "Domicile Certificates",
-    "property tax":          "Property & Tax",
-    "building permit":       "Building & Construction",
-    "noc":                   "NOC Documents",
-    "license":               "Licenses",
-    "marksheet":             "Marksheets",
+    "ferfar":                "Land Records",
+    "mutation":              "Land Records",
+    "7/12":                  "Land Records",
+
+    # Certificates
+    "birth certificate":     "Certificates",
+    "death certificate":     "Certificates",
+    "caste certificate":     "Certificates",
+    "income certificate":    "Certificates",
+    "domicile certificate":  "Certificates",
+    "non-creamy layer":      "Certificates",
+    "obc certificate":       "Certificates",
+    "sc certificate":        "Certificates",
+    "st certificate":        "Certificates",
+    "marksheet":             "Certificates",
+    "mark sheet":            "Certificates",
+    "degree certificate":    "Certificates",
+    "bonafide certificate":  "Certificates",
+    "migration certificate": "Certificates",
+    "medical certificate":   "Certificates",
+    "disability certificate":"Certificates",
+    "fitness certificate":   "Certificates",
+    "gst certificate":       "Certificates",
+    "license":               "Certificates",
+    "licence":               "Certificates",
+    "noc":                   "Certificates",
+
+    # Other / General
+    "tax invoice":           "Other",
+    "gst invoice":           "Other",
+    "income tax":            "Other",
+    "invoice":               "Other",
+    "bill":                  "Other",
 }
 
 

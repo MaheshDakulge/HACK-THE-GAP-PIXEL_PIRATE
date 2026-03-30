@@ -138,10 +138,6 @@ class AnalyticsScreen extends ConsumerWidget {
 
   Widget _buildDocTypeChart(Map<String, dynamic> data) {
     final dist = Map<String, dynamic>.from(data['doc_type_distribution'] ?? {});
-    if (dist.isEmpty) {
-      // Placeholder data
-      dist.addAll({'Marksheet': 40, 'Birth Cert': 25, 'Property': 20, 'Income': 15});
-    }
 
     final colors = [AppColors.primary, AppColors.success, AppColors.warning, AppColors.tertiary, AppColors.error];
     final entries = dist.entries.toList();
@@ -162,43 +158,55 @@ class AnalyticsScreen extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              Expanded(
-                child: PieChart(
-                  PieChartData(
-                    sectionsSpace: 3,
-                    centerSpaceRadius: 44,
-                    sections: entries.asMap().entries.map((e) {
-                      final val = (e.value.value as num).toDouble();
-                      final pct = total > 0 ? (val / total * 100).toInt() : 0;
-                      return PieChartSectionData(
-                        color: colors[e.key % colors.length],
-                        value: val,
-                        title: '$pct%',
-                        radius: 60,
-                        titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
-                      );
-                    }).toList(),
+              if (dist.isEmpty)
+                Expanded(
+                  child: Center(
+                    child: Text('No documents categorized yet', style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary)),
+                  ),
+                )
+              else ...[
+                Expanded(
+                  child: PieChart(
+                    PieChartData(
+                      sectionsSpace: 3,
+                      centerSpaceRadius: 44,
+                      sections: entries.asMap().entries.map((e) {
+                        final val = (e.value.value as num).toDouble();
+                        final pct = total > 0 ? (val / total * 100).toInt() : 0;
+                        return PieChartSectionData(
+                          color: colors[e.key % colors.length],
+                          value: val,
+                          title: '$pct%',
+                          radius: 50,
+                          titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                        );
+                      }).toList(),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 24),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: entries.asMap().entries.map((e) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      Container(width: 12, height: 12, decoration: BoxDecoration(
-                        color: colors[e.key % colors.length],
-                        shape: BoxShape.circle,
-                      )),
-                      const SizedBox(width: 8),
-                      Text(e.value.key, style: AppTextStyles.bodySm.copyWith(color: AppColors.textPrimary)),
-                    ],
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: entries.asMap().entries.map((e) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            Container(width: 12, height: 12, decoration: BoxDecoration(
+                              color: colors[e.key % colors.length],
+                              shape: BoxShape.circle,
+                            )),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text(e.value.key, style: AppTextStyles.bodySm.copyWith(color: AppColors.textPrimary), overflow: TextOverflow.ellipsis, maxLines: 2)),
+                          ],
+                        ),
+                      )).toList(),
+                    ),
                   ),
-                )).toList(),
-              ),
+                ),
+              ],
             ],
           ),
         ),
@@ -212,11 +220,7 @@ class AnalyticsScreen extends ConsumerWidget {
     // Build bar data — use last 7 days, fallback to placeholder
     List<BarChartGroupData> bars;
     if (dailyList.isEmpty) {
-      bars = [60, 85, 45, 120, 95, 70, 110].asMap().entries.map((e) =>
-        BarChartGroupData(x: e.key + 1, barRods: [
-          BarChartRodData(toY: e.value.toDouble(), color: AppColors.primary, width: 20, borderRadius: BorderRadius.circular(5))
-        ])
-      ).toList();
+      bars = [];
     } else {
       bars = dailyList.asMap().entries.take(7).map((e) {
         final count = (e.value['count'] as num?)?.toDouble() ?? 0;
@@ -226,7 +230,7 @@ class AnalyticsScreen extends ConsumerWidget {
       }).toList();
     }
 
-    final maxY = bars.fold<double>(20, (m, b) => b.barRods.first.toY > m ? b.barRods.first.toY : m) * 1.3;
+    final maxY = bars.isEmpty ? 10.0 : bars.fold<double>(20, (m, b) => b.barRods.first.toY > m ? b.barRods.first.toY : m) * 1.3;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,40 +245,42 @@ class AnalyticsScreen extends ConsumerWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 12, offset: const Offset(0, 4))],
           ),
-          child: BarChart(
-            BarChartData(
-              alignment: BarChartAlignment.spaceAround,
-              maxY: maxY,
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: false,
-                horizontalInterval: maxY / 4,
-                getDrawingHorizontalLine: (_) => const FlLine(color: AppColors.divider, strokeWidth: 1),
-              ),
-              borderData: FlBorderData(show: false),
-              titlesData: FlTitlesData(
-                leftTitles: AxisTitles(sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 36,
-                  getTitlesWidget: (v, _) => Text(v.toInt().toString(), style: AppTextStyles.labelMd),
-                )),
-                bottomTitles: AxisTitles(sideTitles: SideTitles(
-                  showTitles: true,
-                  getTitlesWidget: (v, _) {
-                    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                    final i = v.toInt() - 1;
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(i >= 0 && i < days.length ? days[i] : '', style: AppTextStyles.labelMd),
-                    );
-                  },
-                )),
-                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              ),
-              barGroups: bars,
-            ),
-          ),
+          child: bars.isEmpty
+              ? Center(child: Text('No upload activity in the last 7 days', style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary)))
+              : BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: maxY,
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                      horizontalInterval: maxY / 4,
+                      getDrawingHorizontalLine: (_) => const FlLine(color: AppColors.divider, strokeWidth: 1),
+                    ),
+                    borderData: FlBorderData(show: false),
+                    titlesData: FlTitlesData(
+                      leftTitles: AxisTitles(sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 36,
+                        getTitlesWidget: (v, _) => Text(v.toInt().toString(), style: AppTextStyles.labelMd),
+                      )),
+                      bottomTitles: AxisTitles(sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (v, _) {
+                          const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                          final i = v.toInt() - 1;
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(i >= 0 && i < days.length ? days[i] : '', style: AppTextStyles.labelMd),
+                          );
+                        },
+                      )),
+                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    ),
+                    barGroups: bars,
+                  ),
+                ),
         ),
       ],
     );

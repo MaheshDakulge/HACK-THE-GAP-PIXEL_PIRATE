@@ -63,7 +63,9 @@ async def get_department_analytics(
             jobs=jobs.data or [],
             active_users=[{"id": user["id"]}],
         )
-        res["cabinets_count"] = 1  # synthetic "My Uploads" folder
+        # Count unique generated folders (+1 for 'My Uploads')
+        unique_folders = len(res.get("doc_type_distribution", {}).keys())
+        res["cabinets_count"] = unique_folders + 1
         return res
 
     import concurrent.futures
