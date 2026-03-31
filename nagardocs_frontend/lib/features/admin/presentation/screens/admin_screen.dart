@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -8,31 +7,91 @@ import '../../../../core/network/dio_client.dart';
 import '../../../../core/widgets/pulsing_dot.dart';
 import '../../../../core/widgets/app_snackbar.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import 'bulk_review_screen.dart';
 
-// ─── Providers ────────────────────────────────────────────────────────────────
-final adminPresenceProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
+// ─── Helper: poll immediately then every [interval] seconds ──────────────────
+Stream<T> _poll<T>(Duration interval, Future<T> Function() fetch) async* {
+  yield await fetch(); // immediate first call
+  yield* Stream.periodic(interval).asyncMap((_) => fetch());
+}
+
+// ─── Providers (polling every 10s for real-time feel) ─────────────────────────
+final adminPresenceProvider = StreamProvider.autoDispose<List<dynamic>>((ref) {
   final dio = ref.watch(dioProvider);
-  final response = await dio.get('/admin/presence');
-  return response.data as List<dynamic>;
+  return _poll(const Duration(seconds: 10), () async {
+    final res = await dio.get('/admin/presence');
+    return res.data as List<dynamic>;
+  });
 });
 
-final adminActivityProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
+class AdminActivityNotifier extends Notifier<AsyncValue<List<dynamic>>> {
+  int _page = 1;
+  bool _hasMore = true;
+  bool _isFetching = false;
+
+  bool get hasMore => _hasMore;
+  @override
+  AsyncValue<List<dynamic>> build() {
+    Future.microtask(() => fetchFirstPage());
+    return const AsyncValue.loading();
+  }
+
+  Future<void> fetchFirstPage() async {
+    _page = 1;
+    _hasMore = true;
+    _isFetching = false;
+    state = const AsyncValue.loading();
+    try {
+      final dio = ref.read(dioProvider);
+      final res = await dio.get('/admin/activity', queryParameters: {'page': _page, 'limit': 20});
+      final List data = res.data as List;
+      if (data.length < 20) _hasMore = false;
+      state = AsyncValue.data(data);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> fetchNextPage() async {
+    if (!_hasMore || _isFetching || state.isLoading || state.hasError) return;
+    _isFetching = true;
+    _page++;
+    
+    try {
+      final currentList = state.value ?? [];
+      final dio = ref.read(dioProvider);
+      final res = await dio.get('/admin/activity', queryParameters: {'page': _page, 'limit': 20});
+      final List data = res.data as List;
+      if (data.length < 20) _hasMore = false;
+      state = AsyncValue.data([...currentList, ...data]);
+    } catch (e) {
+      _page--;
+    } finally {
+      _isFetching = false;
+    }
+  }
+}
+
+final adminActivityProvider = NotifierProvider<AdminActivityNotifier, AsyncValue<List<dynamic>>>(
+  AdminActivityNotifier.new,
+);
+
+final adminSecurityProvider = StreamProvider.autoDispose<Map<String, dynamic>>((ref) {
   final dio = ref.watch(dioProvider);
-  final response = await dio.get('/admin/activity');
-  return response.data as List<dynamic>;
+  return _poll(const Duration(seconds: 20), () async {
+    final res = await dio.get('/admin/security');
+    return Map<String, dynamic>.from(res.data);
+  });
 });
 
-final adminSecurityProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+final adminPendingUsersProvider = StreamProvider.autoDispose<List<dynamic>>((ref) {
   final dio = ref.watch(dioProvider);
-  final response = await dio.get('/admin/security');
-  return Map<String, dynamic>.from(response.data);
+  return _poll(const Duration(seconds: 20), () async {
+    final res = await dio.get('/admin/users', queryParameters: {'status': 'pending'});
+    return res.data as List<dynamic>;
+  });
 });
 
-final adminPendingUsersProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
-  final dio = ref.watch(dioProvider);
-  final response = await dio.get('/admin/users', queryParameters: {'status': 'pending'});
-  return response.data as List<dynamic>;
-});
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 class AdminScreen extends ConsumerStatefulWidget {
@@ -65,10 +124,8 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
       // Refresh all admin data
       ref.invalidate(adminPresenceProvider);
       ref.invalidate(adminPendingUsersProvider);
-    } on DioException catch (e) {
-      final data = e.response?.data;
-      final msg = (data is Map ? data['detail'] : null) ?? 'Action failed';
-      if (mounted) AppSnackbar.showError(context, msg);
+    } catch (e) {
+      if (mounted) AppSnackbar.showError(context, 'Action failed. Please try again.');
     }
   }
 
@@ -81,7 +138,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Admin Console', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-            Text('NagarDocs AI', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12)),
+            Text('Nagardocs AI', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12)),
           ],
         ),
         flexibleSpace: Container(
@@ -195,7 +252,7 @@ class _PresenceTab extends ConsumerWidget {
                           Text(user['name'] ?? 'Unknown', style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w700)),
                           const SizedBox(height: 2),
                           Text(
-                            '${user['designation'] ?? 'Officer'}  •  ${status.toUpperCase()}',
+                            '${(user['designation'] as String? ?? '').isEmpty ? 'Officer' : (user['designation'] as String).length > 20 ? (user['designation'] as String).substring(0, 20) : user['designation']}  •  ${status.toUpperCase()}',
                             style: AppTextStyles.labelMd.copyWith(
                               color: color,
                               letterSpacing: 0.3,
@@ -225,30 +282,108 @@ class _PresenceTab extends ConsumerWidget {
 }
 
 // ─── TAB 2: ACTIVITY ─────────────────────────────────────────────────────────
-class _ActivityTab extends ConsumerWidget {
+class _ActivityTab extends ConsumerStatefulWidget {
   const _ActivityTab();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ActivityTab> createState() => _ActivityTabState();
+}
+
+class _ActivityTabState extends ConsumerState<_ActivityTab> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      ref.read(adminActivityProvider.notifier).fetchNextPage();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final async = ref.watch(adminActivityProvider);
+    final notifier = ref.read(adminActivityProvider.notifier);
+    
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-      error: (e, _) => _ErrorState(message: e.toString(), onRetry: () => ref.invalidate(adminActivityProvider)),
+      error: (e, _) => _ErrorState(message: e.toString(), onRetry: () => notifier.fetchFirstPage()),
       data: (items) {
         if (items.isEmpty) return const _EmptyState(message: 'No activity logged yet.');
         return RefreshIndicator(
-          onRefresh: () async => ref.invalidate(adminActivityProvider),
+          onRefresh: () async => notifier.fetchFirstPage(),
           child: ListView.separated(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
-            itemCount: items.length,
+            itemCount: items.length + (notifier.hasMore ? 1 : 0),
             separatorBuilder: (_, _) => const Divider(color: AppColors.divider, height: 1),
             itemBuilder: (ctx, i) {
+              if (i == items.length) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.0),
+                  child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                );
+              }
               final item = items[i];
               final userName = item['users']?['name'] ?? 'Unknown';
-              final action = item['action'] ?? 'Action';
-              final docName = item['documents']?['filename'] ?? '';
+              // action comes directly from activity_log (e.g. 'upload', 'login', 'view')
+              final action = item['action'] ?? 'action';
+              final detail = item['detail'] ?? '';
+              // filename from joined documents table
+              final docName = item['documents']?['filename'] ?? detail;
               final ts = item['created_at'] ?? '';
               final shortTime = ts.length >= 19 ? ts.substring(11, 19) : ts;
+
+              // Choose icon and color based on action type
+              final statusIcon = action == 'upload'
+                  ? Icons.upload_file_rounded
+                  : action == 'login'
+                      ? Icons.login_rounded
+                      : action == 'view'
+                          ? Icons.visibility_rounded
+                          : action == 'share'
+                              ? Icons.share_rounded
+                              : action == 'delete'
+                                  ? Icons.delete_rounded
+                                  : action == 'export'
+                                      ? Icons.download_rounded
+                                      : Icons.history_rounded;
+
+              final statusColor = action == 'upload'
+                  ? AppColors.primary
+                  : action == 'login'
+                      ? AppColors.success
+                      : action == 'delete'
+                          ? AppColors.error
+                          : action == 'share'
+                              ? AppColors.tertiary
+                              : AppColors.warning;
+
+              // Human-readable action label
+              final actionLabel = action == 'upload'
+                  ? 'Uploaded document'
+                  : action == 'login'
+                      ? 'Logged in'
+                      : action == 'view'
+                          ? 'Viewed document'
+                          : action == 'share'
+                              ? 'Shared document'
+                              : action == 'delete'
+                                  ? 'Deleted document'
+                                  : action == 'export'
+                                      ? 'Exported document'
+                                      : action;
 
               return ListTile(
                 contentPadding: const EdgeInsets.symmetric(vertical: 4),
@@ -256,14 +391,18 @@ class _ActivityTab extends ConsumerWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.secondaryContainer,
+                    color: statusColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.history_rounded, color: AppColors.primary, size: 20),
+                  child: Icon(statusIcon, color: statusColor, size: 20),
                 ),
-                title: Text('$userName — $action', style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w600)),
+                title: Text('$userName  —  $actionLabel',
+                    style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w600)),
                 subtitle: docName.isNotEmpty
-                    ? Text(docName, style: AppTextStyles.bodySm, maxLines: 1, overflow: TextOverflow.ellipsis)
+                    ? Text(docName,
+                        style: AppTextStyles.bodySm,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis)
                     : null,
                 trailing: Text(shortTime, style: AppTextStyles.labelMd),
               );
@@ -312,7 +451,23 @@ class _SecurityTab extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 if (tampered.isNotEmpty) ...[
-                  Text('🚨 Tampered Documents', style: AppTextStyles.h2.copyWith(color: AppColors.error)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('🚨 Tampered Documents', style: AppTextStyles.h2.copyWith(color: AppColors.error)),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.checklist_rtl_rounded, size: 16),
+                        label: const Text('Bulk Review'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(color: AppColors.primary),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        ),
+                        // ignore: use_build_context_synchronously
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BulkReviewScreen())),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 12),
                   ...tampered.map((doc) => Container(
                     margin: const EdgeInsets.only(bottom: 10),

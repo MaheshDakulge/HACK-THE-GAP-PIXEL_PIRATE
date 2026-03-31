@@ -123,7 +123,7 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen>
               Text('Analyzing Document', style: AppTextStyles.displayMd),
               const SizedBox(height: 8),
               Text(
-                'NagarDocs AI is processing your scan. This takes a few seconds.',
+                'Nagardocs AI is processing your scan. This takes a few seconds.',
                 style: AppTextStyles.bodyLg.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 40),

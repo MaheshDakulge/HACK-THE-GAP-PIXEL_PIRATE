@@ -214,6 +214,72 @@ CREATE POLICY "activity_select" ON activity_log
 CREATE POLICY "activity_no_delete" ON activity_log
     FOR DELETE USING (false);
 
+-- ── 11. CITIZENS (IDENTITY GRAPH) ───────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS citizens (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    dept_id     UUID REFERENCES departments(id) ON DELETE CASCADE,
+    full_name   TEXT NOT NULL,
+    dob         DATE,
+    uid_number  TEXT,               -- Aadhaar / UID
+    gender      TEXT CHECK (gender IN ('male','female','other')),
+    address     TEXT,
+    phone       TEXT,
+    is_flagged  BOOLEAN DEFAULT FALSE,  -- fraud/duplicate flag
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── 12. CITIZEN_EDGES ─────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS citizen_edges (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    from_citizen    UUID NOT NULL REFERENCES citizens(id) ON DELETE CASCADE,
+    to_citizen      UUID NOT NULL REFERENCES citizens(id) ON DELETE CASCADE,
+    edge_type       TEXT NOT NULL CHECK (edge_type IN (
+                        'parent_of','child_of','spouse_of',
+                        'owns_property','duplicate_of','sibling_of'
+                    )),
+    evidence_doc_id UUID REFERENCES documents(id) ON DELETE SET NULL,
+    confidence      FLOAT DEFAULT 1.0,  -- 0-1, lower = inferred
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── 13. CITIZEN_DOCUMENTS ─────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS citizen_documents (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    citizen_id  UUID NOT NULL REFERENCES citizens(id) ON DELETE CASCADE,
+    document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    role        TEXT DEFAULT 'subject',  -- subject | witness | issuer
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(citizen_id, document_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_citizens_dept     ON citizens(dept_id);
+CREATE INDEX IF NOT EXISTS idx_citizens_name     ON citizens USING GIN(to_tsvector('english', full_name));
+CREATE INDEX IF NOT EXISTS idx_citizens_uid      ON citizens(uid_number);
+CREATE INDEX IF NOT EXISTS idx_edges_from        ON citizen_edges(from_citizen);
+CREATE INDEX IF NOT EXISTS idx_edges_to          ON citizen_edges(to_citizen);
+CREATE INDEX IF NOT EXISTS idx_citizen_docs_cit  ON citizen_documents(citizen_id);
+CREATE INDEX IF NOT EXISTS idx_citizen_docs_doc  ON citizen_documents(document_id);
+
+ALTER TABLE citizens          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE citizen_edges     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE citizen_documents ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "citizens_auth"    ON citizens          FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "edges_auth"       ON citizen_edges     FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "cit_docs_auth"    ON citizen_documents FOR ALL USING (auth.role() = 'authenticated');
+
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN NEW.updated_at = NOW(); RETURN NEW; END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS citizens_updated_at ON citizens;
+CREATE TRIGGER citizens_updated_at
+    BEFORE UPDATE ON citizens
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+
 -- ── SEED: SAMPLE DEPARTMENT ───────────────────────────────────────────────────
 -- Remove this before going to production, or update with real department codes.
 INSERT INTO departments (code, name, city, state)

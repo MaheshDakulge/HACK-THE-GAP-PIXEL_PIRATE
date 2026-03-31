@@ -46,9 +46,12 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     _isInitialized = true;
     final raw = List<Map<String, dynamic>>.from(doc['document_fields'] ?? []);
     for (final f in raw) {
+      final labelStr = f['label'] as String? ?? '';
+      if (labelStr.startsWith('system_')) continue;
+      
       _fields.add(_FieldEntry(
         id: f['id'] as String?,
-        label: f['label'] as String? ?? '',
+        label: labelStr,
         controller: TextEditingController(text: f['value'] as String? ?? ''),
       ));
     }

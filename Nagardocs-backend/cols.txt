@@ -1,0 +1,1 @@
+id,job_id,user_id,department_id,folder_id,filename,storage_path,doc_type,language,raw_text,ocr_confidence,sort_confidence,file_hash,tamper_flags,is_tampered,created_at,search_vector,is_private,digital_path

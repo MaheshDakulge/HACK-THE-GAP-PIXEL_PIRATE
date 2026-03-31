@@ -91,11 +91,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> with SingleTick
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Icon(Icons.shield_rounded, size: 64, color: AppColors.primary),
+                      Image.asset('assets/nagardocs_ai_logo.png', height: 64, width: 64, fit: BoxFit.contain),
                       const SizedBox(height: 24),
                       Text('Create Account', style: AppTextStyles.displayMd.copyWith(color: AppColors.textPrimary), textAlign: TextAlign.center),
                       const SizedBox(height: 8),
-                      Text('Join NagarDocs AI to accelerate document processing.', style: AppTextStyles.bodyLg.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
+                      Text('Join Nagardocs AI to accelerate document processing.', style: AppTextStyles.bodyLg.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
                       const SizedBox(height: 32),
                       
                       AppTextField(

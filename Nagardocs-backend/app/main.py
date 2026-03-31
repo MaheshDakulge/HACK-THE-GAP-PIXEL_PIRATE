@@ -2,7 +2,8 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
-from app.api import upload, cabinet, search, analytics, export, admin, share
+from app.api import upload, cabinet, search, analytics, export, admin, share, pin
+from app.api.graph import router as graph_router
 from app.core.websocket import manager
 
 app = FastAPI(
@@ -21,6 +22,7 @@ app.add_middleware(
 
 # ── Routers ────────────────────────────────────────────────────────────────────
 app.include_router(auth_router)
+app.include_router(pin.router)
 app.include_router(upload.router)
 app.include_router(cabinet.router)
 app.include_router(search.router)
@@ -28,6 +30,7 @@ app.include_router(analytics.router)
 app.include_router(export.router)
 app.include_router(admin.router)
 app.include_router(share.router)
+app.include_router(graph_router)
 
 
 # ── WebSocket (admin live presence + activity feed) ───────────────────────────

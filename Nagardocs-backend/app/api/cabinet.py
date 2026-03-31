@@ -400,22 +400,62 @@ async def update_document_fields(
     supabase: SupabaseClient = Depends(get_supabase),
     user: dict = Depends(get_current_user),
 ):
-    doc = supabase.table("documents").select("user_id").eq("id", doc_id).execute()
+    doc = supabase.table("documents").select("user_id, doc_type").eq("id", doc_id).execute()
     if not doc.data:
         raise HTTPException(404, "Document not found.")
     if user.get("role") != "admin" and doc.data[0]["user_id"] != user["id"]:
         raise HTTPException(403, "Not authorized to modify this document.")
 
+    # Fetch old fields to preserve system suggestions and trigger classification
+    old_fields_res = supabase.table("document_fields").select("*").eq("document_id", doc_id).execute()
+    old_fields = old_fields_res.data or []
+    
+    system_suggested_folder = None
+    for f in old_fields:
+        if f.get("label") == "system_suggested_folder":
+            system_suggested_folder = f.get("value")
+
+    # Clear existing visible fields (we keep system ones logic internal if needed)
     supabase.table("document_fields").delete().eq("document_id", doc_id).execute()
 
     inserts = [
         {"document_id": doc_id, "label": f.label, "value": f.value, "confidence": 1.0}
         for f in fields
+        if not f.label.startswith("system_") # prevent user overriding system fields
     ]
+    
+    if system_suggested_folder:
+        inserts.append({
+            "document_id": doc_id,
+            "label": "system_suggested_folder",
+            "value": system_suggested_folder,
+            "confidence": 1.0
+        })
+
     if inserts:
         supabase.table("document_fields").insert(inserts).execute()
 
-    return {"status": "fields updated successfully"}
+    # ---- Trigger Deferred Auto-Classification ----
+    from app.services.autosort_service import AutoSortService
+    autosort_service = AutoSortService()
+    
+    # We need the doc_type of the document
+    doc_type = doc.data[0].get("doc_type", "")
+    folder_id, sort_confidence = await autosort_service.classify(
+        doc_type=doc_type,
+        fields=[i for i in inserts if not i["label"].startswith("system_")],
+        department_id=user["department_id"],
+        suggested_folder_name=system_suggested_folder,
+        supabase=supabase,
+    )
+    
+    if folder_id:
+        supabase.table("documents").update({
+            "folder_id": folder_id,
+            "sort_confidence": sort_confidence
+        }).eq("id", doc_id).execute()
+
+    return {"status": "fields updated and document auto-classified successfully"}
 
 
 # ── Auto-Sort ─────────────────────────────────────────────────────────────────

@@ -19,13 +19,35 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
   void _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
+      allowMultiple: true,
       allowedExtensions: ['pdf', 'jpg', 'png', 'jpeg'],
     );
 
-    if (result != null && result.files.single.path != null) {
-      final success = await ref.read(uploadProvider.notifier).uploadDocument(result.files.single.path!);
-      if (success) {
-        if (mounted) context.push('/processing');
+    if (result != null && result.files.isNotEmpty) {
+      if (result.files.length == 1 && result.files.single.path != null) {
+        // Single file flow -> jump to processing screen for immediate review
+        final success = await ref.read(uploadProvider.notifier).uploadDocument(result.files.single.path!);
+        if (success) {
+          if (mounted) context.push('/processing');
+        }
+      } else {
+        // Multiple files flow -> batch upload in background
+        final paths = result.files.map((f) => f.path).whereType<String>().toList();
+        if (paths.isNotEmpty) {
+          ref.read(uploadProvider.notifier).uploadMultipleDocuments(paths);
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Uploading & Processing ${paths.length} documents in the background...'),
+                backgroundColor: AppColors.primary,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+            // Go to home where user can eventually check the cabinet
+            context.go('/home');
+          }
+        }
       }
     }
   }

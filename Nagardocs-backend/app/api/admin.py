@@ -1,6 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
+from typing import Optional, List
+from pydantic import BaseModel
 from datetime import datetime, timedelta, timezone
+
+class BulkReviewPayload(BaseModel):
+    document_ids: List[str]
+    action: str  # "approve" | "reject"
 
 from app.core.database import get_supabase
 from app.core.security import get_current_admin
@@ -19,10 +24,7 @@ async def get_presence(supabase=Depends(get_supabase), admin: dict = Depends(get
 
     query = supabase.table("users").select("id, name, designation, last_seen, role")
     
-    dept = admin.get("department_id")
-    if dept:
-        query = query.eq("department_id", dept)
-
+    # ✅ Department filtering permanently removed by user command for global visibility
     users = query.execute()
 
     result = []
@@ -49,18 +51,62 @@ async def get_presence(supabase=Depends(get_supabase), admin: dict = Depends(get
 # 📊 TAB 2: ACTIVITY FEED
 # =========================================================
 @router.get("/activity")
-async def get_activity(supabase=Depends(get_supabase), admin: dict = Depends(get_current_admin)):
-    query = supabase.table("upload_jobs").select(
-        "id, status, error_message, created_at, filename, users(name)"
+async def get_activity(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    supabase=Depends(get_supabase), 
+    admin: dict = Depends(get_current_admin)
+):
+    offset = (page - 1) * limit
+    # Fetch raw activity logs (no joins - they fail silently with PostgREST)
+    query = supabase.table("activity_log").select(
+        "id, action, detail, created_at, user_id, document_id, department_id"
     )
-    
-    dept = admin.get("department_id")
-    if dept:
-        query = query.eq("department_id", dept)
 
-    jobs = query.order("created_at", desc=True).limit(20).execute()
+    # ✅ Department filtering permanently removed by user command for global visibility
+    result = query.order("created_at", desc=True).range(offset, offset + limit - 1).execute()
+    logs = result.data or []
 
-    return jobs.data or []
+    if not logs:
+        return []
+
+    # Enrich with user names via separate lookup
+    user_ids = list({r["user_id"] for r in logs if r.get("user_id")})
+    users_map = {}
+    if user_ids:
+        users_result = supabase.table("users").select("id, name, designation").in_("id", user_ids).execute()
+        users_map = {u["id"]: u for u in (users_result.data or [])}
+
+    # Enrich with document filenames via separate lookup
+    doc_ids = list({r["document_id"] for r in logs if r.get("document_id")})
+    docs_map = {}
+    if doc_ids:
+        docs_result = supabase.table("documents").select("id, filename, doc_type").in_("id", doc_ids).execute()
+        docs_map = {d["id"]: d for d in (docs_result.data or [])}
+
+    # Merge enrichment into each log row
+    enriched = []
+    for log in logs:
+        u = users_map.get(log.get("user_id"), {})
+        d = docs_map.get(log.get("document_id"), {})
+        enriched.append({
+            **log,
+            "users": {"name": u.get("name", "Unknown"), "designation": u.get("designation", "")},
+            "documents": {"filename": d.get("filename", ""), "doc_type": d.get("doc_type", "")} if d else None,
+        })
+
+    return enriched
+
+
+# DEBUG: returns raw activity_log rows without any filter (remove in production)
+@router.get("/activity/debug")
+async def debug_activity(supabase=Depends(get_supabase), admin: dict = Depends(get_current_admin)):
+    raw = supabase.table("activity_log").select("*").order("created_at", desc=True).limit(20).execute()
+    return {
+        "admin_dept": admin.get("department_id"),
+        "total_rows": len(raw.data or []),
+        "rows": raw.data or [],
+    }
 
 
 # =========================================================
@@ -68,22 +114,16 @@ async def get_activity(supabase=Depends(get_supabase), admin: dict = Depends(get
 # =========================================================
 @router.get("/security")
 async def get_security_alerts(supabase=Depends(get_supabase), admin: dict = Depends(get_current_admin)):
-    dept = admin.get("department_id")
-
     # 🚨 Tampered documents
     tamper_query = supabase.table("documents").select(
         "id, filename, doc_type, tamper_flags, created_at, users(name)"
     ).eq("is_tampered", True)
-    if dept:
-        tamper_query = tamper_query.eq("department_id", dept)
     tampered_docs = tamper_query.order("created_at", desc=True).limit(10).execute()
 
     # ❌ Failed jobs
     jobs_query = supabase.table("upload_jobs").select(
         "id, filename, error_message, created_at, users(name)"
     ).eq("status", "failed")
-    if dept:
-        jobs_query = jobs_query.eq("department_id", dept)
     failed_jobs = jobs_query.order("created_at", desc=True).limit(10).execute()
 
     # 🛌 Stale or suspicious accounts
@@ -93,8 +133,6 @@ async def get_security_alerts(supabase=Depends(get_supabase), admin: dict = Depe
     stale_query = supabase.table("users").select(
         "id, name, email, last_seen, status"
     ).lt("last_seen", stale_cutoff)
-    if dept:
-        stale_query = stale_query.eq("department_id", dept)
     stale_users = stale_query.execute()
 
     return {
@@ -118,7 +156,6 @@ async def resolve_tamper_flag(doc_id: str, supabase=Depends(get_supabase), admin
         supabase.table("documents")
         .select("id, filename")
         .eq("id", doc_id)
-        .eq("department_id", admin["department_id"])
         .execute()
     )
 
@@ -131,6 +168,75 @@ async def resolve_tamper_flag(doc_id: str, supabase=Depends(get_supabase), admin
     }).eq("id", doc_id).execute()
 
     return {"message": "Tamper flag cleared"}
+
+
+@router.post("/bulk-review")
+async def bulk_review(
+    payload: BulkReviewPayload,
+    supabase=Depends(get_supabase),
+    admin: dict = Depends(get_current_admin)
+):
+    if not payload.document_ids:
+        raise HTTPException(400, "No documents specified.")
+
+    try:
+        if payload.action == "approve":
+            # Approving means completely trusting it — turning off all tamper flags natively
+            # Additionally, we auto-classify the document now that it's validated
+            from app.services.autosort_service import AutoSortService
+            autosort_service = AutoSortService()
+            
+            docs_to_approve = (
+                supabase.table("documents")
+                .select("id, department_id, doc_type, document_fields(*)")
+                .in_("id", payload.document_ids)
+                .execute()
+            )
+            
+            approved_count = 0
+            for doc in (docs_to_approve.data or []):
+                system_suggested_folder = None
+                clean_fields = []
+                for f in (doc.get("document_fields") or []):
+                    if f.get("label") == "system_suggested_folder":
+                        system_suggested_folder = f.get("value")
+                    elif not f.get("label", "").startswith("system_"):
+                        clean_fields.append(f)
+                
+                folder_id, sort_confidence = await autosort_service.classify(
+                    doc_type=doc.get("doc_type", ""),
+                    fields=clean_fields,
+                    department_id=doc.get("department_id"),
+                    suggested_folder_name=system_suggested_folder,
+                    supabase=supabase,
+                )
+                
+                update_payload = {"is_tampered": False, "tamper_flags": []}
+                if folder_id:
+                    update_payload["folder_id"] = folder_id
+                    update_payload["sort_confidence"] = sort_confidence
+                    
+                supabase.table("documents").update(update_payload).eq("id", doc["id"]).execute()
+                approved_count += 1
+                
+            return {"message": f"Successfully approved and categorized {approved_count} documents."}
+            
+        elif payload.action == "reject":
+            # Rejecting means the admin deemed them invalid and removes them natively
+            res = (
+                supabase.table("documents")
+                .delete()
+                .in_("id", payload.document_ids)
+                .execute()
+            )
+            count = len(res.data) if res.data else 0
+            return {"message": f"Successfully rejected and wiped {count} documents."}
+            
+        else:
+            raise HTTPException(400, "Action must be 'approve' or 'reject'.")
+            
+    except Exception as e:
+        raise HTTPException(500, f"Bulk operation failed: {e}")
 
 
 @router.post("/ban-user/{user_id}")
@@ -171,12 +277,8 @@ async def list_users(
 ):
     query = supabase.table("users").select("*")
     
-    dept = admin.get("department_id")
-    if dept:
-        query = query.eq("department_id", dept)
-
     if status:
         query = query.eq("status", status)
 
     result = query.execute()
-    return result.data or []
+    return result.data or []

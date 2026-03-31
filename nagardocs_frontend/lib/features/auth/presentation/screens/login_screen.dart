@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:math' as math;
 
 import '../../../../core/theme/app_colors.dart';
@@ -9,6 +10,7 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/app_snackbar.dart';
 import '../providers/auth_provider.dart';
+import 'pin_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -59,14 +61,47 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
     
     if (success) {
       setState(() => _isFlipped = true);
-      _flipCtrl.forward().then((_) {
-        // Wait 1 second on success side, then route
-        Future.delayed(const Duration(seconds: 1), () {
-          if (mounted) context.go('/home');
-        });
-      });
+      await _flipCtrl.forward();
+
+      if (!mounted) return;
+
+      // ── PIN gate: check if user has PIN set ──────────────────────────────
+      final pinNotifier = ref.read(pinProvider.notifier);
+      final authState = ref.read(authProvider);
+      // Read stored userId from secure storage (written on login)
+      final storage = FlutterSecureStorage();
+      final userId = await storage.read(key: 'auth_user_id');
+      
+      debugPrint('---- PIN GATE CHECK ----');
+      debugPrint('UserId from storage: $userId');
+
+      if (userId != null) {
+        final hasPin = await pinNotifier.checkHasPin(userId);
+        debugPrint('Has Pin: $hasPin');
+        if (!mounted) return;
+
+        final pinOk = await showPinBottomSheet(
+          context: context,
+          userId: userId,
+          mode: hasPin ? PinScreenMode.verify : PinScreenMode.set,
+        );
+
+        if (!mounted) return;
+        if (pinOk) {
+          context.go(authState.isAdmin ? '/admin' : '/home');
+        } else {
+          // PIN cancelled / failed — log out
+          ref.read(authProvider.notifier).logout();
+          setState(() {
+            _isFlipped = false;
+            _flipCtrl.reset();
+          });
+        }
+      } else {
+        // No userId stored — skip PIN and go home
+        if (mounted) context.go(authState.isAdmin ? '/admin' : '/home');
+      }
     } else {
-      // Shake on error
       _shakeCtrl.forward(from: 0.0);
       final err = ref.read(authProvider).errorMessage ?? 'Login Failed';
       if (mounted) AppSnackbar.showError(context, err);
@@ -159,9 +194,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
                   padding: const EdgeInsets.only(top: 40.0),
                   child: Column(
                     children: [
-                      const Icon(Icons.shield_outlined, color: Colors.white, size: 64),
+                      Image.asset('assets/nagardocs_ai_logo.png', height: 80, width: 80, fit: BoxFit.contain),
                       const SizedBox(height: 16),
-                      Text('NagarDocs AI', style: AppTextStyles.displayMd.copyWith(color: Colors.white)),
+                      Text('Nagardocs AI', style: AppTextStyles.displayMd.copyWith(color: Colors.white)),
                     ],
                   ),
                 ),

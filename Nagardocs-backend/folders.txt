@@ -1,0 +1,90 @@
+[
+  {
+    "id": "7197ce09-1178-4598-9543-992aed38d739",
+    "department_id": "43d8cc47-9517-4f57-8b98-4cf83ea5e67c",
+    "name": "Needs Review",
+    "doc_type_affinity": null,
+    "color": "#FF6B35",
+    "icon": "folder_open",
+    "is_system": true,
+    "is_default_review": true,
+    "created_at": "2026-03-24T11:57:48.947741+00:00"
+  },
+  {
+    "id": "dbb37400-eeb4-429d-b21a-5a009273599a",
+    "department_id": "3a7624b4-59e0-448e-9767-584c10e9a3e9",
+    "name": "Needs Review",
+    "doc_type_affinity": null,
+    "color": "#FF6B35",
+    "icon": "folder_open",
+    "is_system": true,
+    "is_default_review": true,
+    "created_at": "2026-03-24T11:57:48.947741+00:00"
+  },
+  {
+    "id": "2fbea510-d212-40ab-a72b-a30d74b5d6c6",
+    "department_id": "a9d033d8-bbbd-4648-a9c3-fa67100f9243",
+    "name": "Needs Review",
+    "doc_type_affinity": null,
+    "color": "#FF6B35",
+    "icon": "folder_open",
+    "is_system": true,
+    "is_default_review": true,
+    "created_at": "2026-03-24T11:57:48.947741+00:00"
+  },
+  {
+    "id": "9e57e17e-dd22-41b0-8c3d-d27741eb7061",
+    "department_id": "3a7624b4-59e0-448e-9767-584c10e9a3e9",
+    "name": "Identity Documents",
+    "doc_type_affinity": null,
+    "color": "#1A6BFF",
+    "icon": "folder",
+    "is_system": true,
+    "is_default_review": false,
+    "created_at": "2026-03-24T20:23:04.862058+00:00"
+  },
+  {
+    "id": "4b2d1631-1d22-4085-b765-6b89619b8db2",
+    "department_id": "43d8cc47-9517-4f57-8b98-4cf83ea5e67c",
+    "name": "Identity Documents",
+    "doc_type_affinity": null,
+    "color": "#1A6BFF",
+    "icon": "folder",
+    "is_system": true,
+    "is_default_review": false,
+    "created_at": "2026-03-31T00:45:03.053064+00:00"
+  },
+  {
+    "id": "c519a357-8c57-433d-9ded-591ebd9b02b6",
+    "department_id": "43d8cc47-9517-4f57-8b98-4cf83ea5e67c",
+    "name": "Land Records",
+    "doc_type_affinity": null,
+    "color": "#1A6BFF",
+    "icon": "folder",
+    "is_system": true,
+    "is_default_review": false,
+    "created_at": "2026-03-31T00:45:23.853739+00:00"
+  },
+  {
+    "id": "24bd03ac-a9d5-4ce1-ae5a-48150c722141",
+    "department_id": "43d8cc47-9517-4f57-8b98-4cf83ea5e67c",
+    "name": "Tax Documents",
+    "doc_type_affinity": null,
+    "color": "#1A6BFF",
+    "icon": "folder",
+    "is_system": true,
+    "is_default_review": false,
+    "created_at": "2026-03-31T01:19:31.542006+00:00"
+  },
+  {
+    "id": "7fc8b55d-2910-4679-81d6-120426a7e5c4",
+    "department_id": "43d8cc47-9517-4f57-8b98-4cf83ea5e67c",
+    "name": "Certificates",
+    "doc_type_affinity": null,
+    "color": "#1A6BFF",
+    "icon": "folder",
+    "is_system": true,
+    "is_default_review": false,
+    "created_at": "2026-03-31T01:19:32.18967+00:00"
+  }
+]

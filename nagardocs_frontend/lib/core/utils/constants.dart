@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String appName = 'NagarDocs AI';
+  static const String appName = 'Nagardocs AI';
 
   // You are using ADB USB Port Forwarding!
   // This means your phone forwards 127.0.0.1 straight over the USB cable to your laptop.

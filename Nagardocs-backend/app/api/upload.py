@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks
-from typing import Optional, Annotated
+from typing import Optional, Annotated, List
 
 from app.core.database import get_supabase, get_supabase_sync
 from app.core.security import get_current_user
@@ -9,6 +9,7 @@ from app.services.ocr_service import OCRService
 from app.services.tamper_service import TamperService
 from app.services.autosort_service import AutoSortService
 from app.services.activity_service import activity_service
+from app.services.relationship_service import process_relationships
 
 router = APIRouter(prefix="/upload", tags=["upload"])
 
@@ -104,13 +105,19 @@ async def _process_document_async(
         is_tampered = len(tamper_flags) > 0
 
         # Step 5 — Auto-sort into cabinet folder
+        # Step 5 — Assign to Pending Classification Holding Area
         _update_step(supabase, job_id, 5)
-        folder_id, sort_confidence = await autosort_service.classify(
-            doc_type=extracted.get("doc_type", ""),
-            fields=extracted.get("fields", []),
-            department_id=department_id,
-            supabase=supabase,
+        folder_id = await autosort_service._get_or_create_folder(
+            department_id, "Review Extracted Data", supabase
         )
+        # Store the AI's suggestion securely so we can use it upon Confirmation
+        suggested_folder = extracted.get("suggested_folder", "Needs Review")
+        extracted.setdefault("fields", []).append({
+            "label": "system_suggested_folder",
+            "value": suggested_folder,
+            "confidence": 0.99
+        })
+        sort_confidence = 0.50 # Hardcoded temporarily since it's waiting for manual review
 
         # Persist document
         doc_data = {
@@ -146,6 +153,28 @@ async def _process_document_async(
         ]
         if fields_to_insert:
             supabase.table("document_fields").insert(fields_to_insert).execute()
+
+        # STEP 8.5 — Identity Graph: detect citizens + relationships
+        try:
+            rel_result = await process_relationships(
+                db=supabase,
+                document_id=str(doc_id),
+                dept_id=str(department_id) if department_id else None,
+                doc_type=extracted.get("doc_type", ""),
+                extracted_fields=extracted.get("fields", [])
+            )
+            print(f"Graph: citizens={rel_result['citizens_created']} edges={rel_result['edges_created']} duplicate={rel_result['duplicate_found']}")
+            
+            # Store relationship result in upload_jobs progress for Flutter to read
+            supabase.table("upload_jobs").update({
+                "progress": {
+                    "citizens_created": rel_result["citizens_created"],
+                    "edges_created": rel_result["edges_created"],
+                    "duplicate_found": rel_result["duplicate_found"]
+                }
+            }).eq("id", job_id).execute()
+        except Exception as e:
+            print(f"Relationship processing failed (non-fatal): {e}")
 
         activity_service.log_upload(user_id, department_id, doc_id, filename)
 
@@ -205,6 +234,23 @@ async def upload_document(
     )
 
     return result.data[0]
+
+
+# ── Active Jobs endpoint ───────────────────────────────────────────────────────
+@router.get("/jobs/active", response_model=List[UploadJobResponse])
+async def get_active_jobs(
+    supabase=Depends(get_supabase),
+    user: dict = Depends(get_current_user),
+):
+    result = (
+        supabase.table("upload_jobs")
+        .select("id,status,filename,step,progress_pct,error_message,document_id,created_at")
+        .eq("user_id", user["id"])
+        .in_("status", ["queued", "processing"])
+        .order("created_at", desc=True)
+        .execute()
+    )
+    return result.data or []
 
 
 # ── Status endpoint ────────────────────────────────────────────────────────────

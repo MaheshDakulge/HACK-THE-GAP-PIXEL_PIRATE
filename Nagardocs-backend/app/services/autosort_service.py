@@ -69,11 +69,13 @@ class AutoSortService:
         doc_type: str,
         fields: list,
         department_id: str,
+        suggested_folder_name: str = None,
         supabase=None,
     ) -> tuple[str | None, float]:
         """
         Returns (folder_id, confidence_score).
-        If confidence < threshold → returns the dept's 'Needs Review' folder.
+        Uses the AI's suggested_folder_name to confidently create categorical folders.
+        Legacy doc_type mapping is kept as a strict fallback if AI fails to suggest.
         """
         if not department_id:
             return None, 0.0
@@ -81,9 +83,18 @@ class AutoSortService:
         if supabase is None:
             supabase = get_supabase_sync()
 
+        # STEP 1: Rely on the AI's intelligent categorization first!
+        if suggested_folder_name and suggested_folder_name.strip().lower() != "needs review":
+            clean_folder_name = suggested_folder_name.strip().title()
+            folder_id = await self._get_or_create_folder(
+                department_id, clean_folder_name, supabase
+            )
+            return folder_id, 0.95
+
+        # STEP 2: Legacy fallback mapped by python keywords
         doc_type_lower = (doc_type or "").lower().strip()
-        matched_folder_name = None
-        confidence = 0.0
+        matched_folder_name = "Needs Review"
+        confidence = 0.50
 
         for keyword, folder_name in DOC_TYPE_TO_FOLDER.items():
             if keyword in doc_type_lower:
@@ -91,11 +102,6 @@ class AutoSortService:
                 confidence = 0.90
                 break
 
-        if confidence < settings.autosort_confidence_threshold:
-            matched_folder_name = "Needs Review"
-            confidence = 0.50
-
-        # Look up or create the folder in this department
         folder_id = await self._get_or_create_folder(
             department_id, matched_folder_name, supabase
         )

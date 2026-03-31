@@ -10,6 +10,8 @@ from app.services.supabase_service import (
     create_user,
     get_user_by_email,
 )
+from app.services.activity_service import activity_service
+from app.core.database import get_supabase_sync
 
 from app.schemas.auth_schema import (
     SignupRequest,
@@ -113,8 +115,21 @@ async def login(data: LoginRequest):
         "department_id": user.get("department_id"),
     })
 
+    # 📝 Log login event to activity_log
+    try:
+        activity_service.log_login(
+            user_id=user["id"],
+            department_id=user.get("department_id") or "",
+        )
+        # Update last_seen timestamp
+        supabase = get_supabase_sync()
+        supabase.table("users").update({"last_seen": "now()"}).eq("id", user["id"]).execute()
+    except Exception:
+        pass  # Never block login due to logging failure
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
         "role": user.get("role", "user"),
+        "user_id": user["id"],
     }

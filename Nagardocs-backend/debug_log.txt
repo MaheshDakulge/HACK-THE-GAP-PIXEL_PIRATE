@@ -1,0 +1,321 @@
+Logs:
+[
+  {
+    "id": "5179b4be-fdc9-4c25-bd0d-d8eaa8a39eaf",
+    "user_id": "e88d7697-99fc-4400-8d1c-3b85f5cdf2d9",
+    "department_id": "3a7624b4-59e0-448e-9767-584c10e9a3e9",
+    "document_id": "dcb885f9-7508-4f00-80e1-465523187157",
+    "action": "upload",
+    "detail": "Uploaded 1.webp",
+    "metadata": {},
+    "created_at": "2026-03-24T20:23:09.544442+00:00"
+  },
+  {
+    "id": "15f08076-434a-413d-8448-1c3c2ed6dd89",
+    "user_id": "e88d7697-99fc-4400-8d1c-3b85f5cdf2d9",
+    "department_id": "3a7624b4-59e0-448e-9767-584c10e9a3e9",
+    "document_id": "eb77aef7-689f-4d6c-b611-73c34a7ce34f",
+    "action": "upload",
+    "detail": "Uploaded 1.webp",
+    "metadata": {},
+    "created_at": "2026-03-24T20:26:45.885198+00:00"
+  },
+  {
+    "id": "e0f8ddd6-9177-4c95-a4b5-2a0cd7425cdb",
+    "user_id": "e88d7697-99fc-4400-8d1c-3b85f5cdf2d9",
+    "department_id": "3a7624b4-59e0-448e-9767-584c10e9a3e9",
+    "document_id": "6988c32c-0dee-4e12-b2c9-f33d7c30ae17",
+    "action": "upload",
+    "detail": "Uploaded 1.webp",
+    "metadata": {},
+    "created_at": "2026-03-24T21:01:03.259441+00:00"
+  },
+  {
+    "id": "04ea44a9-fbde-4b93-b367-14e0f28364eb",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "12438ffc-a7e4-489a-8a1c-47d48de2f766",
+    "action": "upload",
+    "detail": "Uploaded: mahesh adhar  (1).pdf",
+    "metadata": {},
+    "created_at": "2026-03-29T14:31:42.491363+00:00"
+  },
+  {
+    "id": "ae5b8ded-21f4-4d34-8b73-a95d2b64a4c2",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "5830ff14-a4ca-4e01-85cd-64a5295ecf4b",
+    "action": "upload",
+    "detail": "Uploaded: swati Dakulge adhar.pdf",
+    "metadata": {},
+    "created_at": "2026-03-29T17:01:35.597975+00:00"
+  },
+  {
+    "id": "cfba5a93-6164-4640-9e76-015fd71107f5",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "c55200f9-4ee0-45b2-8833-4589cf10fc14",
+    "action": "upload",
+    "detail": "Uploaded: swati Dakulge adhar.pdf",
+    "metadata": {},
+    "created_at": "2026-03-29T19:50:54.023882+00:00"
+  },
+  {
+    "id": "8a226195-f609-4470-8dca-813aaab80ff9",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "c2420efc-3989-413a-9887-87313f58bf95",
+    "action": "upload",
+    "detail": "Uploaded: Screenshot_20260330_013955.jpg",
+    "metadata": {},
+    "created_at": "2026-03-29T20:27:07.175182+00:00"
+  },
+  {
+    "id": "d4b24926-a9b9-4e74-b29c-9373b2b0738e",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "38c8b2b2-2447-40d7-b64c-df576ace091d",
+    "action": "upload",
+    "detail": "Uploaded: Screenshot_20260330_013617.jpg",
+    "metadata": {},
+    "created_at": "2026-03-29T20:28:29.225241+00:00"
+  },
+  {
+    "id": "db7c6e4f-e872-451e-9e97-058a382aca9f",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "eedde8b4-2791-4624-b5ef-b78d83dc6cb5",
+    "action": "upload",
+    "detail": "Uploaded: Screenshot_20260330_013955.jpg",
+    "metadata": {},
+    "created_at": "2026-03-29T20:28:42.970811+00:00"
+  },
+  {
+    "id": "03c11b19-fc79-4389-85b0-4634348e8996",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "060f175e-2eae-4ebe-b44a-1922e9b66cd8",
+    "action": "upload",
+    "detail": "Uploaded: Screenshot_20260330_013955.jpg",
+    "metadata": {},
+    "created_at": "2026-03-30T04:46:11.644366+00:00"
+  },
+  {
+    "id": "02f3afd1-16de-4856-9ee3-4d3fbc49cacb",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": null,
+    "action": "upload",
+    "detail": "Uploaded: swati Dakulge adhar.pdf",
+    "metadata": {},
+    "created_at": "2026-03-29T20:03:04.163401+00:00"
+  },
+  {
+    "id": "273ec076-6f51-49df-a69f-2f70bfffda6c",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": null,
+    "action": "upload",
+    "detail": "Uploaded: swati Dakulge adhar.pdf",
+    "metadata": {},
+    "created_at": "2026-03-29T19:59:56.773262+00:00"
+  },
+  {
+    "id": "00d656eb-f657-407f-b224-215c8b6ed9b7",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": null,
+    "action": "upload",
+    "detail": "Uploaded: Screenshot_20260330_013955.jpg",
+    "metadata": {},
+    "created_at": "2026-03-30T05:02:47.606659+00:00"
+  },
+  {
+    "id": "b7e67edc-adbe-4985-bf82-e965486d17d1",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "290b6ca5-d152-4fb7-88f7-381cb6d51d4e",
+    "action": "upload",
+    "detail": "Uploaded: 109561314656782.jpg",
+    "metadata": {},
+    "created_at": "2026-03-30T13:00:16.534448+00:00"
+  },
+  {
+    "id": "60dbbe33-ad66-4420-b454-81e5ec495ddb",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "bfb180d1-b8b7-4227-917e-ae5735e4dda9",
+    "action": "upload",
+    "detail": "Uploaded: 112280632254175.jpg",
+    "metadata": {},
+    "created_at": "2026-03-30T13:45:02.60403+00:00"
+  },
+  {
+    "id": "9e970968-00be-4cc6-ac2d-5413668dc4c8",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "bd6e7b5e-7594-4e45-a0ff-8b15de8a42db",
+    "action": "upload",
+    "detail": "Uploaded: 112280632254175.jpg",
+    "metadata": {},
+    "created_at": "2026-03-30T13:45:04.081705+00:00"
+  },
+  {
+    "id": "0aee82e0-9ce6-46c3-9dbd-776d50e0cabb",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "5719187f-f9e8-4248-b20d-13d059e50859",
+    "action": "upload",
+    "detail": "Uploaded: IMG-20260330-WA0038.jpg",
+    "metadata": {},
+    "created_at": "2026-03-30T17:41:54.057411+00:00"
+  },
+  {
+    "id": "aa71fc75-379f-45b6-b47b-98250ee69592",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "595644e5-fc9b-4394-8af5-e3644aaa4e41",
+    "action": "upload",
+    "detail": "Uploaded: 132931850024339.jpg",
+    "metadata": {},
+    "created_at": "2026-03-30T19:28:53.963365+00:00"
+  },
+  {
+    "id": "b987fb48-a8a9-4afb-b840-16291f34906f",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "714d0153-bcb4-475d-a0cb-8f3233c15b7a",
+    "action": "upload",
+    "detail": "Uploaded: aadhaar_raj_patil.pdf",
+    "metadata": {},
+    "created_at": "2026-03-30T22:53:33.120051+00:00"
+  },
+  {
+    "id": "78757f78-f769-4174-8e7b-5e79c8b1a741",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "023b36fc-6784-46da-b4b0-6958e3d64f4d",
+    "action": "upload",
+    "detail": "Uploaded: aadhaar_meera_patil.pdf",
+    "metadata": {},
+    "created_at": "2026-03-30T23:03:56.454155+00:00"
+  },
+  {
+    "id": "773095ea-4065-46b6-829b-90644b857d65",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "92bc4771-5e4b-47f5-a28b-38aac9ee8c79",
+    "action": "upload",
+    "detail": "Uploaded: aadhaar_ananya_patil.pdf",
+    "metadata": {},
+    "created_at": "2026-03-30T23:04:00.021972+00:00"
+  },
+  {
+    "id": "d6f6e238-0f12-422e-8053-52440d4385ad",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "99c766ff-c636-4a20-8228-3904d9cc2268",
+    "action": "upload",
+    "detail": "Uploaded: aadhaar_ramesh_patil.pdf",
+    "metadata": {},
+    "created_at": "2026-03-30T23:04:06.902234+00:00"
+  },
+  {
+    "id": "bcbf7ae5-9683-4d90-82fb-3b1493b857a7",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "4dbd2bcc-fefb-4f05-80ef-4ef1a0dd5088",
+    "action": "upload",
+    "detail": "Uploaded: aadhaar_vikram_patil.pdf",
+    "metadata": {},
+    "created_at": "2026-03-30T23:04:10.478394+00:00"
+  },
+  {
+    "id": "4abee462-b17a-4bba-b0d2-a9335c6dd2bc",
+    "user_id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "department_id": null,
+    "document_id": "64c7e67d-8011-4117-91da-1b2d1fc79097",
+    "action": "upload",
+    "detail": "Uploaded: aadhaar_sunita_patil.pdf",
+    "metadata": {},
+    "created_at": "2026-03-30T23:04:14.267311+00:00"
+  },
+  {
+    "id": "c874e674-952d-4c81-b2bf-bcbc0ae0c40b",
+    "user_id": "e88d7697-99fc-4400-8d1c-3b85f5cdf2d9",
+    "department_id": "3a7624b4-59e0-448e-9767-584c10e9a3e9",
+    "document_id": null,
+    "action": "login",
+    "detail": "User logged in",
+    "metadata": {},
+    "created_at": "2026-03-30T21:43:25.956222+00:00"
+  },
+  {
+    "id": "9cc578c8-0848-450b-a44e-8a42fa7e99bd",
+    "user_id": "e88d7697-99fc-4400-8d1c-3b85f5cdf2d9",
+    "department_id": "3a7624b4-59e0-448e-9767-584c10e9a3e9",
+    "document_id": null,
+    "action": "upload",
+    "detail": "Uploaded: marksheet.pdf",
+    "metadata": {},
+    "created_at": "2026-03-30T22:13:25.956222+00:00"
+  },
+  {
+    "id": "747e5299-54e0-4f95-8160-c462723460e8",
+    "user_id": "e88d7697-99fc-4400-8d1c-3b85f5cdf2d9",
+    "department_id": "3a7624b4-59e0-448e-9767-584c10e9a3e9",
+    "document_id": null,
+    "action": "upload",
+    "detail": "Uploaded: aadhaar_card.jpg",
+    "metadata": {},
+    "created_at": "2026-03-30T22:43:25.956222+00:00"
+  },
+  {
+    "id": "673cb908-e36a-45a5-9d9a-e6a4e014b435",
+    "user_id": "e88d7697-99fc-4400-8d1c-3b85f5cdf2d9",
+    "department_id": "3a7624b4-59e0-448e-9767-584c10e9a3e9",
+    "document_id": null,
+    "action": "view",
+    "detail": "Viewed: marksheet.pdf",
+    "metadata": {},
+    "created_at": "2026-03-30T23:13:25.956222+00:00"
+  },
+  {
+    "id": "c80dde85-af67-48e5-8fc0-4ce6136da7c2",
+    "user_id": "e88d7697-99fc-4400-8d1c-3b85f5cdf2d9",
+    "department_id": "3a7624b4-59e0-448e-9767-584c10e9a3e9",
+    "document_id": null,
+    "action": "login",
+    "detail": "User logged in",
+    "metadata": {},
+    "created_at": "2026-03-30T23:33:25.956222+00:00"
+  }
+]
+Users:
+[
+  {
+    "id": "3606da4f-e135-49df-a666-20eee6f8055c",
+    "name": "Mahesh Dakulge",
+    "department_id": "43d8cc47-9517-4f57-8b98-4cf83ea5e67c"
+  },
+  {
+    "id": "2440f069-6e5d-40ea-a1e5-9f05524f4298",
+    "name": "krishna",
+    "department_id": null
+  },
+  {
+    "id": "bb1890bd-596f-412e-b04a-1a1af6ca55ef",
+    "name": "abhay",
+    "department_id": null
+  },
+  {
+    "id": "e88d7697-99fc-4400-8d1c-3b85f5cdf2d9",
+    "name": "mahesh",
+    "department_id": "3a7624b4-59e0-448e-9767-584c10e9a3e9"
+  },
+  {
+    "id": "8c5be195-ef9b-45eb-af51-ddf1b7473a59",
+    "name": "mahesh",
+    "department_id": "550e8400-e29b-41d4-a716-446655440000"
+  }
+]

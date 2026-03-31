@@ -16,6 +16,7 @@ import '../../features/admin/presentation/screens/admin_screen.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/scanner/screens/scanner_screen.dart';
 import '../../features/scanner/screens/preview_screen.dart';
+import '../../features/graph/presentation/screens/graph_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
@@ -61,6 +62,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/search', builder: (context, state) => const SearchScreen()),
       GoRoute(path: '/analytics', builder: (context, state) => const AnalyticsScreen()),
       GoRoute(path: '/admin', builder: (context, state) => const AdminScreen()),
+      GoRoute(path: '/graph', builder: (context, state) => const GraphScreen()),
       GoRoute(
         path: '/review/:id',
         builder: (context, state) =>

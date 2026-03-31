@@ -24,6 +24,7 @@ Analyze this document image and the raw OCR text. Return a JSON object with:
   "language": "Marathi | Hindi | English | Mixed",
   "confidence": 0.0 to 1.0,
   "tamper_flags": ["list of suspicious findings, or empty array"],
+  "suggested_folder": "Decide the precise categorical folder for this document. Use standard professional names (e.g., 'Identity Documents', 'Property Tax', 'Certificates') or confidently INVENT a concise new category (e.g., 'Health Records', 'Invoices', 'Legal Contracts'). If entirely unclassifiable, output 'Needs Review'.",
   "fields": [
     // Dynamically extract ALL important fields present in the document.
     // ALWAYS format standard documents as follows:
@@ -99,6 +100,7 @@ class OCRService:
                 "language": "Unknown",
                 "confidence": 0.3,
                 "tamper_flags": [],
+                "suggested_folder": "Needs Review",
                 "fields": [],
             }
 

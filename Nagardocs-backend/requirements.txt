@@ -29,3 +29,4 @@ slowapi
 # Data export
 pandas
 openpyxl
+python-dateutil

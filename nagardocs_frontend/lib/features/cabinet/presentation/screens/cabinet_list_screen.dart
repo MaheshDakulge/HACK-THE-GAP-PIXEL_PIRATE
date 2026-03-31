@@ -43,7 +43,7 @@ class CabinetListScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Organized by NagarDocs AI', style: AppTextStyles.bodyLg.copyWith(color: AppColors.textSecondary)),
+                    Text('Organized by Nagardocs AI', style: AppTextStyles.bodyLg.copyWith(color: AppColors.textSecondary)),
                     const SizedBox(height: 24),
                   ],
                 ),

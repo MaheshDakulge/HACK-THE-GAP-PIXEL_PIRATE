@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/dio_client.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 enum UploadStatus { idle, uploading, processing, done, error }
 
@@ -132,5 +133,22 @@ class UploadNotifier extends Notifier<UploadState> {
   void reset() {
     _cancelToken?.cancel('Cancelled by user');
     state = UploadState.initial();
+  }
+
+  Future<void> uploadMultipleDocuments(List<String> filePaths) async {
+    final dio = ref.read(dioProvider);
+    // Execute sequentially in the background
+    for (final path in filePaths) {
+      try {
+        final formData = FormData.fromMap({
+          'file': await MultipartFile.fromFile(path),
+        });
+        await dio.post('/upload', data: formData);
+      } catch (e) {
+        // Suppress errors for background batch uploads
+        // They can be tracked in backend logs or a future bulk error view
+        debugPrint('Background upload error for $path: $e');
+      }
+    }
   }
 }

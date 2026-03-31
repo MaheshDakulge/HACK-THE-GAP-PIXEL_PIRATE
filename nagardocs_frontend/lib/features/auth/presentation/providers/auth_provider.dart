@@ -2,8 +2,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/network/dio_client.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
+
+/// Exposes the stored user id (set after successful login)
+final userIdProvider = FutureProvider<String?>((ref) async {
+  const storage = FlutterSecureStorage();
+  return storage.read(key: 'auth_user_id');
+});
 
 enum AuthStatus { initial, loading, authenticated, error }
 
@@ -52,11 +59,20 @@ class AuthNotifier extends Notifier<AuthState> {
 
       final token = response.data['access_token'];
       if (token != null) {
-        // Decode role from response (backend includes it in token payload, 
-        // so we fetch /auth/me or we trust the token's role field in response)
         final role = response.data['role'] ?? 'user';
+        
+        // Decode the JWT to get the user ID (stored in 'sub')
+        String? userId;
+        try {
+          final decodedToken = JwtDecoder.decode(token);
+          userId = decodedToken['sub'] as String?;
+        } catch (_) {}
+
         await _storage.write(key: 'auth_token', value: token);
         await _storage.write(key: 'auth_role', value: role);
+        if (userId != null) {
+          await _storage.write(key: 'auth_user_id', value: userId);
+        }
         state = AuthState.authenticated(role);
         return true;
       }
@@ -117,6 +133,7 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> logout() async {
     await _storage.delete(key: 'auth_token');
     await _storage.delete(key: 'auth_role');
+    await _storage.delete(key: 'auth_user_id');
     state = AuthState.initial();
   }
 }

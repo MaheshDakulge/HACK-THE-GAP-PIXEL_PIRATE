@@ -8,6 +8,7 @@ import '../../../../core/widgets/pulsing_dot.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/home_provider.dart';
+import '../providers/active_jobs_provider.dart';
 
 // ─── Recent Documents Provider ────────────────────────────────────────────────
 final recentDocsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
@@ -198,10 +199,104 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               ),
               title: Text(doc['filename'] ?? 'Document', style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w600)),
               subtitle: Text(doc['doc_type'] ?? 'Unknown type', style: AppTextStyles.bodySm),
-              trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
-              onTap: () => context.push('/result/${doc['id']}'),
+              trailing: TextButton.icon(
+                onPressed: () => context.push('/review/${doc['id']}'),
+                icon: const Icon(Icons.edit_document, size: 16),
+                label: const Text('Review'),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+              onTap: () => context.push('/review/${doc['id']}'),
             );
           },
+        );
+      },
+    );
+  }
+
+  Widget _buildActiveUploads() {
+    final activeAsync = ref.watch(activeJobsProvider);
+    return activeAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (jobs) {
+        if (jobs.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const PulsingDot(color: AppColors.warning),
+                const SizedBox(width: 8),
+                Text('Processing ${jobs.length} Upload${jobs.length == 1 ? '' : 's'}', style: AppTextStyles.headlineSm),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: jobs.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
+              itemBuilder: (context, i) {
+                final job = jobs[i];
+                final filename = job['filename'] ?? 'Document';
+                final progress = (job['progress_pct'] as num?)?.toDouble() ?? 0.0;
+                final stepInt = (job['step'] as num?)?.toInt() ?? 0;
+                
+                final stepText = stepInt == 1 ? 'Computing Hash & Duplicates' 
+                    : stepInt == 2 ? 'Uploading to Storage'
+                    : stepInt == 3 ? 'AI Deep Analysis'
+                    : stepInt == 4 ? 'Tamper Detection'
+                    : stepInt == 5 ? 'Auto-Sorting into Cabinet'
+                    : 'Queued';
+
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceLowest,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(filename, 
+                                style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w600),
+                                maxLines: 1, overflow: TextOverflow.ellipsis),
+                          ),
+                          Text('${(progress * 100).toInt()}%', 
+                              style: AppTextStyles.labelMd.copyWith(color: AppColors.primary)),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 6,
+                          backgroundColor: AppColors.surfaceHigh,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text('Step $stepInt of 5: $stepText', 
+                          style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary, fontSize: 11)),
+                    ],
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 32),
+          ],
         );
       },
     );
@@ -244,7 +339,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('NagarDocs AI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                  const Text('Nagardocs AI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
                   Text('Officer Dashboard', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12)),
                 ],
               ),
@@ -330,18 +425,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                     const SizedBox(height: 32),
                     Text('Quick Actions', style: AppTextStyles.headlineSm),
                     const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildQuickAction('Scan', Icons.document_scanner_rounded, '/upload'),
-                        _buildQuickAction('Cabinet', Icons.folder_rounded, '/cabinet'),
-                        _buildQuickAction('Search', Icons.search_rounded, '/search'),
-                        _buildQuickAction('Analytics', Icons.bar_chart_rounded, '/analytics'),
-                      ],
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          _buildQuickAction('Scan', Icons.document_scanner_rounded, '/upload'),
+                          const SizedBox(width: 24),
+                          _buildQuickAction('Cabinet', Icons.folder_rounded, '/cabinet'),
+                          const SizedBox(width: 24),
+                          _buildQuickAction('Search', Icons.search_rounded, '/search'),
+                          const SizedBox(width: 24),
+                          _buildQuickAction('Analytics', Icons.bar_chart_rounded, '/analytics'),
+                          const SizedBox(width: 24),
+                          _buildQuickAction('Graph', Icons.account_tree_outlined, '/graph'),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 32),
+                    _buildActiveUploads(),
                     Row(
+
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Recent Documents', style: AppTextStyles.headlineSm),

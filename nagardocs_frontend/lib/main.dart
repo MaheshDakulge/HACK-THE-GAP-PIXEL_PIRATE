@@ -19,7 +19,7 @@ class NagarDocsApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'NagarDocs AI',
+      title: 'Nagardocs AI',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.background,

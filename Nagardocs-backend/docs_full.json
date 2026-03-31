@@ -1,0 +1,178 @@
+[
+  {
+    "id": "dcb885f9-7508-4f00-80e1-465523187157",
+    "filename": "1.webp",
+    "doc_type": "Aadhaar Card",
+    "ocr_confidence": 0.95,
+    "is_tampered": false,
+    "folder_id": "9e57e17e-dd22-41b0-8c3d-d27741eb7061"
+  },
+  {
+    "id": "eb77aef7-689f-4d6c-b611-73c34a7ce34f",
+    "filename": "1.webp",
+    "doc_type": "Aadhaar Card",
+    "ocr_confidence": 0.95,
+    "is_tampered": false,
+    "folder_id": "9e57e17e-dd22-41b0-8c3d-d27741eb7061"
+  },
+  {
+    "id": "6988c32c-0dee-4e12-b2c9-f33d7c30ae17",
+    "filename": "1.webp",
+    "doc_type": "Aadhaar Card",
+    "ocr_confidence": 0.85,
+    "is_tampered": true,
+    "folder_id": "9e57e17e-dd22-41b0-8c3d-d27741eb7061"
+  },
+  {
+    "id": "c2420efc-3989-413a-9887-87313f58bf95",
+    "filename": "Screenshot_20260330_013955.jpg",
+    "doc_type": "Other",
+    "ocr_confidence": 0.7,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "12438ffc-a7e4-489a-8a1c-47d48de2f766",
+    "filename": "mahesh adhar  (1).pdf",
+    "doc_type": "Aadhaar Card",
+    "ocr_confidence": 0.95,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "5830ff14-a4ca-4e01-85cd-64a5295ecf4b",
+    "filename": "swati Dakulge adhar.pdf",
+    "doc_type": "Aadhaar Card",
+    "ocr_confidence": 0.85,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "c55200f9-4ee0-45b2-8833-4589cf10fc14",
+    "filename": "swati Dakulge adhar.pdf",
+    "doc_type": "Aadhaar Card",
+    "ocr_confidence": 0.85,
+    "is_tampered": true,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "38c8b2b2-2447-40d7-b64c-df576ace091d",
+    "filename": "Screenshot_20260330_013617.jpg",
+    "doc_type": "Other",
+    "ocr_confidence": 0.0,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "eedde8b4-2791-4624-b5ef-b78d83dc6cb5",
+    "filename": "Screenshot_20260330_013955.jpg",
+    "doc_type": "Other",
+    "ocr_confidence": 0.8,
+    "is_tampered": true,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "060f175e-2eae-4ebe-b44a-1922e9b66cd8",
+    "filename": "Screenshot_20260330_013955.jpg",
+    "doc_type": "Land Record",
+    "ocr_confidence": 0.8,
+    "is_tampered": true,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "290b6ca5-d152-4fb7-88f7-381cb6d51d4e",
+    "filename": "109561314656782.jpg",
+    "doc_type": "Aadhaar Card",
+    "ocr_confidence": 0.95,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "bfb180d1-b8b7-4227-917e-ae5735e4dda9",
+    "filename": "112280632254175.jpg",
+    "doc_type": "Other",
+    "ocr_confidence": 0.85,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "bd6e7b5e-7594-4e45-a0ff-8b15de8a42db",
+    "filename": "112280632254175.jpg",
+    "doc_type": "Other",
+    "ocr_confidence": 0.85,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "5719187f-f9e8-4248-b20d-13d059e50859",
+    "filename": "IMG-20260330-WA0038.jpg",
+    "doc_type": "Other",
+    "ocr_confidence": 0.98,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "595644e5-fc9b-4394-8af5-e3644aaa4e41",
+    "filename": "132931850024339.jpg",
+    "doc_type": "Other",
+    "ocr_confidence": 0.85,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "714d0153-bcb4-475d-a0cb-8f3233c15b7a",
+    "filename": "aadhaar_raj_patil.pdf",
+    "doc_type": "Aadhaar Card",
+    "ocr_confidence": 0.95,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "023b36fc-6784-46da-b4b0-6958e3d64f4d",
+    "filename": "aadhaar_meera_patil.pdf",
+    "doc_type": "Aadhaar Card",
+    "ocr_confidence": 0.95,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "92bc4771-5e4b-47f5-a28b-38aac9ee8c79",
+    "filename": "aadhaar_ananya_patil.pdf",
+    "doc_type": "Aadhaar Card",
+    "ocr_confidence": 0.95,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "99c766ff-c636-4a20-8228-3904d9cc2268",
+    "filename": "aadhaar_ramesh_patil.pdf",
+    "doc_type": "Aadhaar Card",
+    "ocr_confidence": 0.95,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "4dbd2bcc-fefb-4f05-80ef-4ef1a0dd5088",
+    "filename": "aadhaar_vikram_patil.pdf",
+    "doc_type": "Aadhaar Card",
+    "ocr_confidence": 0.95,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "64c7e67d-8011-4117-91da-1b2d1fc79097",
+    "filename": "aadhaar_sunita_patil.pdf",
+    "doc_type": "Aadhaar Card",
+    "ocr_confidence": 0.99,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  },
+  {
+    "id": "569d3a90-ab69-4b14-adf3-7ca5ddefdc89",
+    "filename": "151528866045665.jpg",
+    "doc_type": "Other",
+    "ocr_confidence": 0.85,
+    "is_tampered": false,
+    "folder_id": "7197ce09-1178-4598-9543-992aed38d739"
+  }
+]
