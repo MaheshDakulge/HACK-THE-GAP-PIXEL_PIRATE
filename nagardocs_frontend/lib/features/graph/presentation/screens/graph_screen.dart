@@ -178,6 +178,13 @@ class _GraphCanvas extends StatefulWidget {
 
 class _GraphCanvasState extends State<_GraphCanvas> {
   final _key = GlobalKey();
+  final _transformCtrl = TransformationController();
+
+  @override
+  void dispose() {
+    _transformCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -186,36 +193,113 @@ class _GraphCanvasState extends State<_GraphCanvas> {
       selectedId: widget.selectedId,
     );
 
-    return GestureDetector(
-      onTapUp: (details) {
-        final box = _key.currentContext?.findRenderObject() as RenderBox?;
-        if (box == null) return;
-        final localPos = box.globalToLocal(details.globalPosition);
-        final hit = painter.hitTestNode(localPos, box.size);
-        widget.onNodeTap(hit);
-      },
-      child: Container(
-        margin: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: RepaintBoundary(
-            child: CustomPaint(
-              key: _key,
-              painter: painter,
-              child: const SizedBox.expand(),
+    return Stack(
+      children: [
+        InteractiveViewer(
+          transformationController: _transformCtrl,
+          minScale: 0.4,
+          maxScale: 4.0,
+          boundaryMargin: const EdgeInsets.all(80),
+          child: GestureDetector(
+            onTapUp: (details) {
+              final box = _key.currentContext?.findRenderObject() as RenderBox?;
+              if (box == null) return;
+              // box is inside InteractiveViewer child, so globalToLocal
+              // already gives paint-space coordinates
+              final localPos = box.globalToLocal(details.globalPosition);
+              final hit = painter.hitTestNode(localPos, box.size);
+              widget.onNodeTap(hit);
+            },
+            child: Container(
+              margin: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: RepaintBoundary(
+                  child: CustomPaint(
+                    key: _key,
+                    painter: painter,
+                    child: const SizedBox.expand(),
+                  ),
+                ),
+              ),
             ),
           ),
+        ),
+        // Zoom controls
+        Positioned(
+          right: 20,
+          bottom: 20,
+          child: Column(
+            children: [
+              _ZoomBtn(
+                icon: Icons.add,
+                onTap: () {
+                  final cur = _transformCtrl.value.clone();
+                  cur.scale(1.3, 1.3);
+                  _transformCtrl.value = cur;
+                },
+              ),
+              const SizedBox(height: 8),
+              _ZoomBtn(
+                icon: Icons.remove,
+                onTap: () {
+                  final cur = _transformCtrl.value.clone();
+                  cur.scale(0.77, 0.77);
+                  _transformCtrl.value = cur;
+                },
+              ),
+              const SizedBox(height: 8),
+              _ZoomBtn(
+                icon: Icons.center_focus_strong_rounded,
+                tooltip: 'Reset',
+                onTap: () => _transformCtrl.value = Matrix4.identity(),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ZoomBtn extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final String? tooltip;
+  const _ZoomBtn({required this.icon, required this.onTap, this.tooltip});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip ?? '',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(icon, size: 20, color: const Color(0xFF185FA5)),
         ),
       ),
     );
@@ -226,6 +310,7 @@ class _GraphCanvasState extends State<_GraphCanvas> {
 class _StatsBar extends StatelessWidget {
   final IdentityGraph graph;
   const _StatsBar({required this.graph});
+
 
   @override
   Widget build(BuildContext context) {

@@ -146,8 +146,10 @@ class GraphPainter extends CustomPainter {
             ..style = PaintingStyle.stroke,
         );
         // Color petal by doc confidence
+        // Color petal by doc confidence
         if (i < node.docs.length) {
-          final conf = node.docs[i].confidence;
+          final doc = node.docs[i];
+          final conf = doc.confidence;
           final dotColor = conf >= 85
               ? const Color(0xFF1D9E75)
               : conf >= 60
@@ -157,6 +159,21 @@ class GraphPainter extends CustomPainter {
             petalPos, _r(3.5),
             Paint()..color = dotColor.withValues(alpha: 0.85),
           );
+
+          // Show tiny initial letter for doc type
+          final String initial = doc.type.isNotEmpty ? doc.type[0].toUpperCase() : '?';
+          final tpDoc = TextPainter(
+            text: TextSpan(
+              text: initial,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 6 * scaleX,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            textDirection: TextDirection.ltr,
+          )..layout();
+          tpDoc.paint(canvas, petalPos - Offset(tpDoc.width / 2, tpDoc.height / 2));
         }
       }
 
