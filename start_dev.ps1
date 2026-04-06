@@ -1,5 +1,5 @@
 $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
-$port = 37926
+$port = 8000
 
 Write-Host "NagarDocs Dev Tunnel Started" -ForegroundColor Green
 Write-Host "Watching USB connection... (Press Ctrl+C to stop)" -ForegroundColor Yellow
