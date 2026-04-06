@@ -107,9 +107,11 @@ async def _process_document_async(
         # Step 5 — Auto-sort into cabinet folder
         # Step 5 — Assign to Pending Classification Holding Area
         _update_step(supabase, job_id, 5)
-        folder_id = await autosort_service._get_or_create_folder(
-            department_id, "Review Extracted Data", supabase
-        )
+        folder_id = None
+        if department_id:
+            folder_id = await autosort_service._get_or_create_folder(
+                department_id, "Needs Review", supabase
+            )
         # Store the AI's suggestion securely so we can use it upon Confirmation
         suggested_folder = extracted.get("suggested_folder", "Needs Review")
         extracted.setdefault("fields", []).append({

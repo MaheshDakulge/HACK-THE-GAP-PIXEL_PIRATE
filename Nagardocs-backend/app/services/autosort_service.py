@@ -110,6 +110,8 @@ class AutoSortService:
     async def _get_or_create_folder(
         self, department_id: str, folder_name: str, supabase
     ) -> str | None:
+        if not department_id:
+            return None
         try:
             existing = (
                 supabase.table("folders")
