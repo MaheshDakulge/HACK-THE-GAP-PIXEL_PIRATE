@@ -37,7 +37,7 @@ jobs:
       - name: Build Web App
         run: |
           cd nagardocs_frontend
-          flutter build web --release --base-href /HACK-THE-GAP-NAGARDOCS_AI/
+          flutter build web --release --base-href /HACK-THE-GAP-PIXEL_PIRATE/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
